@@ -38,6 +38,13 @@ def main():
 	'>30':3
 	}
 
+	label_readmission_two_class = np.zeros(N_SAMPLES, dtype = int)
+	readimission_Two_Class_Dict = {
+	'NO':0,
+	'<30':1,
+	'>30':1
+	}
+
 	# HBA1C label: 
 	# 4 classes:
 	# 1 for >8
@@ -112,6 +119,8 @@ def main():
 
 			#parse the readimission label, which is last column
 			label_readmission[i] = readmission_Dict[row[-1]]
+			label_readmission_two_class[i] = readimission_Two_Class_Dict[row[-1]]
+
 			#parse the HBA1C test label, which is column 23
 			label_HBA1C[i] = HBA1C_Dict[row[23]]
 			#parse the Primary Diagonosis, which is column 18
@@ -154,6 +163,7 @@ def main():
 	print "data_numerical:\n",data_numerical[-1:,] # see the last patient for verification
 	print "data_bagOfDrugs:\n",data_bagOfDrugs
 	print "label_readmission:\n",label_readmission
+	print "label_readmission_two_class:\n", label_readmission_two_class
 	print "label_medication_change:\n", label_medication_change
 	print "label_HBA1C:\n", label_HBA1C
 	print "label_diag1:\n", label_diag1
@@ -162,12 +172,20 @@ def main():
 	print "V_count:", V_count
 	print "missingcount:", missingcount
 
-	saveArray(data_numerical, "data_numerical")
-	saveSparse(csc_matrix(data_bagOfDrugs), "data_bagOfDrugs_sparse")
-	saveArray(label_readmission, "label_readmission")
-	saveArray(label_diag1,"label_diag1")
-	saveArray(label_HBA1C, "label_HBA1C")
-	saveArray(label_medication_change, "label_medication_change")
+	#saveArray(data_numerical, "data_numerical")
+	#saveSparse(csc_matrix(data_bagOfDrugs), "data_bagOfDrugs_sparse")
+	#saveArray(label_readmission, "label_readmission")
+	#saveArray(label_diag1,"label_diag1")
+	#saveArray(label_HBA1C, "label_HBA1C")
+	#saveArray(label_medication_change, "label_medication_change")
+
+	print "Number of readmissions:", len(label_readmission_two_class[label_readmission_two_class == 1])
+	print "Number of patients who did not readmit:", len(label_readmission_two_class[label_readmission_two_class == 0])
+
+	print "Number of drug changes:", len(label_medication_change[label_medication_change==1])
+	print "Number of patients who did not readmit:", len(label_medication_change[label_medication_change == 0])
+
+	#saveArray(label_readmission_two_class, "label_readmission_two_class")
 
 	#print np.asarray(label_readmission)
 	return
