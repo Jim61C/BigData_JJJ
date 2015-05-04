@@ -1,9 +1,11 @@
+# Author: Xing Yifan Yix14021
 import numpy as np
 import math
 import scipy.io as sio
 import scipy.sparse as sp
 from scipy.sparse import csc_matrix
 import csv
+import matplotlib.pyplot as plt
 
 def saveSparse (array, filename):
 	np.savez(filename,data = array.data ,indices=array.indices,indptr =array.indptr, shape=array.shape )
@@ -25,6 +27,7 @@ def main():
 	N_SAMPLES = 101766
 	N_DRUGS = 23
 	N_NUMERICAL = 8 # 1 column for age, the others for the numerical values
+	N_CATEGORICAL = 3
 
 	# the three lable vectors
 	# Readmission label: 3 classes:
@@ -75,6 +78,8 @@ def main():
 	# Medication change label: binary, 0 for NO, 1 for Yes
 	label_medication_change = np.zeros(N_SAMPLES,dtype = int)
 
+	#Categorical Data Array (N_samples, 3)
+	data_categorical = np.zeros(shape = (N_SAMPLES, N_CATEGORICAL), dtype= np.float64)
 
 	# Numerical Data Array
 	data_numerical = np.zeros(shape = (N_SAMPLES, N_NUMERICAL), dtype= np.float64)
@@ -87,6 +92,18 @@ def main():
 	'Steady':1,
 	'No':0
 	}
+	age_dict = { # 1 is yong, 2 is medain, 3 is median old, 4 is old, 5 is extreme old
+	0:1,
+	1:1,
+	2:1,
+	3:1,
+	4:1,
+	5:2,
+	6:3,
+	7:4,
+	8:5,
+	9:5
+	}
 
 	missingcount = 0
 	E_count = 0
@@ -98,9 +115,11 @@ def main():
 		iterrows = iter(reader)
 		next(iterrows)
 		for row in iterrows:
+			data_categorical[i][0:N_CATEGORICAL] = [int(num) for num in row[6:6+N_CATEGORICAL]]
+
 			#parse Age, age is in column 4
 			age = int(row[4][1:row[4].find('-')])
-			data_numerical[i][0] = age/10 # age class is just age/10, TODO: try with just 0,10,20,30...etc year old categories
+			data_numerical[i][0] = age_dict[age/10] # age class is depending on the histogram distribution
 			#parse Time in the hospital, which is column 9
 			data_numerical[i][1] = int (row[9])
 			#parse the rest of the numerical data, which is in column 12:18
@@ -160,6 +179,19 @@ def main():
 
 			i+= 1
 
+
+
+	# print np.unique(data_numerical[:,0])
+	# numBins = 10
+	# plt.xlabel("Age class")
+	# plt.ylabel("frequency")
+	# hist = plt.hist(data_numerical[:,0],numBins,color='green',alpha=0.8)
+	# plt.show(hist)
+
+	print "data Categorical first row:", data_categorical[0]
+	print "data Categorical shape:",data_categorical.shape
+	
+
 	print "data_numerical:\n",data_numerical[-1:,] # see the last patient for verification
 	print "data_bagOfDrugs:\n",data_bagOfDrugs
 	print "label_readmission:\n",label_readmission
@@ -170,8 +202,12 @@ def main():
 	
 	print "\nE_count:", E_count
 	print "V_count:", V_count
-	print "missingcount:", missingcount
+	print "diagnosis missingcount:", missingcount
 
+	# raise ValueError ("purpose stop")
+
+	#saveArray(data_categorical, "data_categorical")
+	#saveArray(data_numerical, "data_numerical_age_quantized")
 	#saveArray(data_numerical, "data_numerical")
 	#saveSparse(csc_matrix(data_bagOfDrugs), "data_bagOfDrugs_sparse")
 	#saveArray(label_readmission, "label_readmission")
@@ -184,6 +220,8 @@ def main():
 
 	print "Number of drug changes:", len(label_medication_change[label_medication_change==1])
 	print "Number of patients who did not readmit:", len(label_medication_change[label_medication_change == 0])
+
+
 
 	#saveArray(label_readmission_two_class, "label_readmission_two_class")
 
